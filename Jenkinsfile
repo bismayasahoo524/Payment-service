@@ -2,9 +2,14 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true)
+    }
+
     environment {
         APP_NAME = "sre-payment-api"
         IMAGE_TAG = "day9-${BUILD_NUMBER}"
+        VENV = ".venv"
     }
 
     stages {
@@ -15,20 +20,30 @@ pipeline {
             }
         }
 
+        stage('Check Tools') {
+            steps {
+                bat '''
+                    python --version
+                    git --version
+                    docker --version
+                '''
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
-                sh '''
-                    python3 -m venv .venv
-                    .venv/bin/pip install -r requirements.txt
+                bat '''
+                    python -m venv %VENV%
+                    %VENV%\\Scripts\\python.exe -m pip install --upgrade pip
+                    %VENV%\\Scripts\\python.exe -m pip install -r requirements.txt
                 '''
             }
         }
 
         stage('Run Unit Tests') {
             steps {
-                sh '''
-                    .venv/bin/python -m pytest -v \
-                        --junitxml=test-results.xml
+                bat '''
+                    %VENV%\\Scripts\\python.exe -m pytest -v --junitxml=test-results.xml
                 '''
             }
 
@@ -41,18 +56,16 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh '''
-                    docker build \
-                        -t ${APP_NAME}:${IMAGE_TAG} .
+                bat '''
+                    docker build -t %APP_NAME%:%IMAGE_TAG% .
                 '''
             }
         }
 
         stage('Verify Docker Image') {
             steps {
-                sh '''
-                    docker image inspect \
-                        ${APP_NAME}:${IMAGE_TAG}
+                bat '''
+                    docker image inspect %APP_NAME%:%IMAGE_TAG%
                 '''
             }
         }
