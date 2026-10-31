@@ -21,14 +21,14 @@ pipeline {
         }
 
         stage('Check Tools') {
-            steps {
-                bat '''
-                    python --version
-                    git --version
-                    docker --version
-                '''
-            }
-        }
+    steps {
+        bat '''
+            echo PATH=%PATH%
+            "C:\\Users\\rudra\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe" --version
+            "C:\\Users\\rudra\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" --version
+        '''
+    }
+}
 
         stage('Install Dependencies') {
             steps {
